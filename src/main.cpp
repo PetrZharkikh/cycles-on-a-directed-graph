@@ -21,6 +21,7 @@ int main() {
     lf.printLoopInfos();
     lf.printAllLoops();
     lf.printLoopTree();
+    lf.printLoopBlocks();
 
     return 0;
 }

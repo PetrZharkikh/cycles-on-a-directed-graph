@@ -254,3 +254,70 @@ void LoopFinder::printLoopTree() const {
         std::cout << "{" << parent << ", " << child << "}\n";
     }
 }
+
+std::vector<int> LoopFinder::getChildren(int parentId) const {
+    std::vector<int> children;
+    std::vector<std::pair<int, int>> tree = buildLoopTree();
+
+    for (const auto& [parent, child] : tree) {
+        if (parent == parentId) {
+            children.push_back(child);
+        }
+    }
+
+    return children;
+}
+
+std::set<std::string> LoopFinder::getInnermostNodes(int loopId) const {
+    std::vector<LoopInfo> loops = buildAllLoops();
+
+    const LoopInfo* currentLoop = nullptr;
+    for (const auto& loop : loops) {
+        if (loop.id == loopId) {
+            currentLoop = &loop;
+            break;
+        }
+    }
+
+    if (currentLoop == nullptr) {
+        return {};
+    }
+
+    std::set<std::string> result = currentLoop->nodes;
+    std::vector<int> children = getChildren(loopId);
+
+    for (int childId : children) {
+        for (const auto& loop : loops) {
+            if (loop.id == childId) {
+                for (const auto& node : loop.nodes) {
+                    result.erase(node);
+                }
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+void LoopFinder::printLoopBlocks() const {
+    std::cout << "\nLoop blocks:\n";
+
+    std::vector<LoopInfo> loops = buildAllLoops();
+
+    for (const auto& loop : loops) {
+        std::set<std::string> blockNodes = getInnermostNodes(loop.id);
+
+        std::cout << "[" << loop.id << "] -> { ";
+        for (const auto& node : blockNodes) {
+            std::cout << node << " ";
+        }
+        std::cout << "}";
+
+        if (!loop.isRoot) {
+            std::cout << ", header: " << loop.header;
+        }
+
+        std::cout << "\n";
+    }
+}
