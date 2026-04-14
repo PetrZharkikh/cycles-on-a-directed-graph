@@ -16,5 +16,7 @@ int main() {
     lf.findBackEdges();
     lf.printBackEdges();
 
+    lf.printLoops();
+
     return 0;
 }

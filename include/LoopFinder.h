@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <stack>
 
 class LoopFinder {
 public:
@@ -22,4 +23,7 @@ public:
     void dfs(const std::string& u);
     void findBackEdges();
     void printBackEdges() const;
+
+    std::set<std::string> buildLoop(const std::string& u, const std::string& v) const;
+    void printLoops() const;
 };

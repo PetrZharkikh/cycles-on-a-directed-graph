@@ -54,3 +54,45 @@ void LoopFinder::printBackEdges() const {
         std::cout << u << " -> " << v << "\n";
     }
 }
+
+std::set<std::string> LoopFinder::buildLoop(const std::string& u, const std::string& v) const {
+    std::set<std::string> loop;
+    std::stack<std::string> st;
+
+    loop.insert(u);
+    loop.insert(v);
+    st.push(u);
+
+    while (!st.empty()) {
+        std::string cur = st.top();
+        st.pop();
+
+        auto it = rev_graph.find(cur);
+        if (it == rev_graph.end()) {
+            continue;
+        }
+
+        for (const auto& pred : it->second) {
+            if (!loop.count(pred)) {
+                loop.insert(pred);
+                st.push(pred);
+            }
+        }
+    }
+
+    return loop;
+}
+
+void LoopFinder::printLoops() const {
+    std::cout << "\nloops from back edges:\n";
+
+    for (const auto& [u, v] : backEdges) {
+        std::set<std::string> loop = buildLoop(u, v);
+
+        std::cout << "back edge " << u << " -> " << v << ": { ";
+        for (const auto& node : loop) {
+            std::cout << node << " ";
+        }
+        std::cout << "}\n";
+    }
+}
