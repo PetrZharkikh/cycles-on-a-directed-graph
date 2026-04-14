@@ -12,6 +12,7 @@ struct LoopInfo {
     int id;
     std::string header;
     std::set<std::string> nodes;
+    bool isRoot;
 };
 
 class LoopFinder {
@@ -39,4 +40,7 @@ public:
 
     std::vector<LoopInfo> buildLoopInfos() const;
     void printLoopInfos() const;
+
+    std::vector<LoopInfo> buildAllLoops() const;
+    void printAllLoops() const;
 };

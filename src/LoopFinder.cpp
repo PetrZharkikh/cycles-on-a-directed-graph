@@ -151,3 +151,55 @@ void LoopFinder::printLoopInfos() const {
         std::cout << "}\n";
     }
 }
+
+std::vector<LoopInfo> LoopFinder::buildAllLoops() const {
+    std::vector<LoopInfo> loops = buildLoopInfos();
+
+    std::set<std::string> nodesInLoops;
+    for (const auto& loop : loops) {
+        nodesInLoops.insert(loop.nodes.begin(), loop.nodes.end());
+    }
+
+    std::set<std::string> rootNodes;
+    for (const auto& node : nodes) {
+        if (!nodesInLoops.count(node)) {
+            rootNodes.insert(node);
+        }
+    }
+
+    std::vector<LoopInfo> result;
+
+    LoopInfo rootLoop;
+    rootLoop.id = 0;
+    rootLoop.header = "";
+    rootLoop.nodes = rootNodes;
+    rootLoop.isRoot = true;
+    result.push_back(rootLoop);
+
+    for (auto& loop : loops) {
+        loop.isRoot = false;
+        result.push_back(loop);
+    }
+
+    return result;
+}
+
+void LoopFinder::printAllLoops() const {
+    std::cout << "\nAll loops:\n";
+
+    std::vector<LoopInfo> loops = buildAllLoops();
+
+    for (const auto& loop : loops) {
+        std::cout << "[" << loop.id << "] -> { ";
+        for (const auto& node : loop.nodes) {
+            std::cout << node << " ";
+        }
+        std::cout << "}";
+
+        if (!loop.isRoot) {
+            std::cout << ", header: " << loop.header;
+        }
+
+        std::cout << "\n";
+    }
+}

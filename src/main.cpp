@@ -19,6 +19,7 @@ int main() {
     lf.printLoops();
     lf.printMergedLoops();
     lf.printLoopInfos();
+    lf.printAllLoops();
 
     return 0;
 }
