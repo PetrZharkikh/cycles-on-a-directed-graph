@@ -13,5 +13,8 @@ int main() {
 
     lf.printGraph();
 
+    lf.findBackEdges();
+    lf.printBackEdges();
+
     return 0;
 }

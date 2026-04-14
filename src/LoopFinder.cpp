@@ -20,3 +20,37 @@ void LoopFinder::printGraph() {
         cout << "\n";
     }
 }
+
+void LoopFinder::dfs(const std::string& u) {
+    visited.insert(u);
+    inStack.insert(u);
+
+    for (const auto& v : graph[u]) {
+        if (!visited.count(v)) {
+            dfs(v);
+        } else if (inStack.count(v)) {
+            backEdges.push_back({u, v});
+        }
+    }
+
+    inStack.erase(u);
+}
+
+void LoopFinder::findBackEdges() {
+    visited.clear();
+    inStack.clear();
+    backEdges.clear();
+
+    for (const auto& node : nodes) {
+        if (!visited.count(node)) {
+            dfs(node);
+        }
+    }
+}
+
+void LoopFinder::printBackEdges() const {
+    std::cout << "\nBack edges:\n";
+    for (const auto& [u, v] : backEdges) {
+        std::cout << u << " -> " << v << "\n";
+    }
+}
