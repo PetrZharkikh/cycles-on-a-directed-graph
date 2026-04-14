@@ -5,23 +5,16 @@ int main() {
 
     lf.addEdge("start", "1");
     lf.addEdge("1", "2");
-    lf.addEdge("2", "1");
+    lf.addEdge("1", "3");
     lf.addEdge("2", "3");
-    lf.addEdge("3", "1");
     lf.addEdge("3", "4");
-    lf.addEdge("4", "stop");
-
-    lf.printGraph();
+    lf.addEdge("4", "3");
+    lf.addEdge("4", "5");
+    lf.addEdge("5", "2");
+    lf.addEdge("5", "stop");
 
     lf.findBackEdges();
-    lf.printBackEdges();
-
-    lf.printLoops();
-    lf.printMergedLoops();
-    lf.printLoopInfos();
-    lf.printAllLoops();
-    lf.printLoopTree();
-    lf.printLoopBlocks();
+    lf.printFinalResult();
 
     return 0;
 }

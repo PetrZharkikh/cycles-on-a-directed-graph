@@ -321,3 +321,66 @@ void LoopFinder::printLoopBlocks() const {
         std::cout << "\n";
     }
 }
+
+std::set<std::string> LoopFinder::getEntryNodes(const LoopInfo& loop) const {
+    std::set<std::string> entryNodes;
+
+    for (const auto& node : loop.nodes) {
+        auto it = rev_graph.find(node);
+        if (it == rev_graph.end()) {
+            continue;
+        }
+
+        for (const auto& pred : it->second) {
+            if (!loop.nodes.count(pred)) {
+                entryNodes.insert(node);
+            }
+        }
+    }
+
+    return entryNodes;
+}
+
+std::string LoopFinder::getLoopType(const LoopInfo& loop) const {
+    if (loop.isRoot) {
+        return "";
+    }
+
+    std::set<std::string> entryNodes = getEntryNodes(loop);
+
+    if (entryNodes.size() == 1 && entryNodes.count(loop.header)) {
+        return "reducible";
+    }
+
+    return "irreducible";
+}
+
+void LoopFinder::printFinalResult() const {
+    std::cout << "\nFinal result:\n";
+    std::cout << "Loop blocks:\n";
+
+    std::vector<LoopInfo> loops = buildAllLoops();
+
+    for (const auto& loop : loops) {
+        std::set<std::string> blockNodes = getInnermostNodes(loop.id);
+
+        std::cout << "[" << loop.id << "] -> { ";
+        for (const auto& node : blockNodes) {
+            std::cout << node << " ";
+        }
+        std::cout << "}";
+
+        if (!loop.isRoot) {
+            std::cout << ", header: " << loop.header
+                      << ", " << getLoopType(loop);
+        }
+
+        std::cout << "\n";
+    }
+
+    std::cout << "Loop tree:\n";
+    std::vector<std::pair<int, int>> tree = buildLoopTree();
+    for (const auto& [parent, child] : tree) {
+        std::cout << "{" << parent << ", " << child << "}\n";
+    }
+}

@@ -51,4 +51,8 @@ public:
     std::vector<int> getChildren(int parentId) const;
     std::set<std::string> getInnermostNodes(int loopId) const;
     void printLoopBlocks() const;
+
+    std::set<std::string> getEntryNodes(const LoopInfo& loop) const;
+    std::string getLoopType(const LoopInfo& loop) const;
+    void printFinalResult() const;
 };
