@@ -20,6 +20,7 @@ int main() {
     lf.printMergedLoops();
     lf.printLoopInfos();
     lf.printAllLoops();
+    lf.printLoopTree();
 
     return 0;
 }

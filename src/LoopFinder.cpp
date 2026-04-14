@@ -203,3 +203,54 @@ void LoopFinder::printAllLoops() const {
         std::cout << "\n";
     }
 }
+
+bool LoopFinder::isSubset(const std::set<std::string>& a, const std::set<std::string>& b) const {
+    for (const auto& x : a) {
+        if (!b.count(x)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+std::vector<std::pair<int, int>> LoopFinder::buildLoopTree() const {
+    std::vector<std::pair<int, int>> tree;
+    std::vector<LoopInfo> loops = buildAllLoops();
+
+    for (const auto& child : loops) {
+        if (child.id == 0) {
+            continue;
+        }
+
+        int parentId = 0;
+        int bestParentSize = -1;
+
+        for (const auto& candidate : loops) {
+            if (candidate.id == 0 || candidate.id == child.id) {
+                continue;
+            }
+
+            if (isSubset(child.nodes, candidate.nodes)) {
+                int candidateSize = static_cast<int>(candidate.nodes.size());
+
+                if (bestParentSize == -1 || candidateSize < bestParentSize) {
+                    bestParentSize = candidateSize;
+                    parentId = candidate.id;
+                }
+            }
+        }
+
+        tree.push_back({parentId, child.id});
+    }
+
+    return tree;
+}
+
+void LoopFinder::printLoopTree() const {
+    std::cout << "\nLoop tree:\n";
+
+    std::vector<std::pair<int, int>> tree = buildLoopTree();
+    for (const auto& [parent, child] : tree) {
+        std::cout << "{" << parent << ", " << child << "}\n";
+    }
+}

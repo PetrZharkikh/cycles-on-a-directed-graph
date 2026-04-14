@@ -43,4 +43,12 @@ public:
 
     std::vector<LoopInfo> buildAllLoops() const;
     void printAllLoops() const;
+
+    bool isSubset(const std::set<std::string>& a, const std::set<std::string>& b) const;
+    std::vector<std::pair<int, int>> buildLoopTree() const;
+    void printLoopTree() const;
+
+    std::vector<int> getChildren(int parentId) const;
+    std::set<std::string> getInnermostNodes(int loopId) const;
+    void printLoopBlocks() const;
 };
