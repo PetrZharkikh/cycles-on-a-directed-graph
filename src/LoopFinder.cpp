@@ -96,3 +96,28 @@ void LoopFinder::printLoops() const {
         std::cout << "}\n";
     }
 }
+
+std::map<std::string, std::set<std::string>> LoopFinder::collectLoopsByHeader() const {
+    std::map<std::string, std::set<std::string>> mergedLoops;
+
+    for (const auto& [u, v] : backEdges) {
+        std::set<std::string> loop = buildLoop(u, v);
+        mergedLoops[v].insert(loop.begin(), loop.end());
+    }
+
+    return mergedLoops;
+}
+
+void LoopFinder::printMergedLoops() const {
+    std::cout << "\nmerged loops by header:\n";
+
+    std::map<std::string, std::set<std::string>> mergedLoops = collectLoopsByHeader();
+
+    for (const auto& [header, loopNodes] : mergedLoops) {
+        std::cout << "header " << header << ": { ";
+        for (const auto& node : loopNodes) {
+            std::cout << node << " ";
+        }
+        std::cout << "}\n";
+    }
+}

@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <stack>
+#include <map>
 
 class LoopFinder {
 public:
@@ -26,4 +27,7 @@ public:
 
     std::set<std::string> buildLoop(const std::string& u, const std::string& v) const;
     void printLoops() const;
+
+    std::map<std::string, std::set<std::string>> collectLoopsByHeader() const;
+    void printMergedLoops() const;
 };

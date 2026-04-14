@@ -17,6 +17,7 @@ int main() {
     lf.printBackEdges();
 
     lf.printLoops();
+    lf.printMergedLoops();
 
     return 0;
 }
