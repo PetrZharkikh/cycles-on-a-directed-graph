@@ -1,6 +1,7 @@
 #include "LoopFinder.h"
-#include <iostream>
 
+#include <iostream>
+#include <algorithm>
 using namespace std;
 
 void LoopFinder::addEdge(const string& u, const string& v) {
@@ -10,201 +11,7 @@ void LoopFinder::addEdge(const string& u, const string& v) {
     nodes.insert(v);
 }
 
-void LoopFinder::printGraph() {
-    cout << "Graph:\n";
-    for (const auto& [u, neighbors] : graph) {
-        cout << u << " -> ";
-        for (const auto& v : neighbors) {
-            cout << v << " ";
-        }
-        cout << "\n";
-    }
-}
-
-void LoopFinder::dfs(const std::string& u) {
-    visited.insert(u);
-    inStack.insert(u);
-
-    for (const auto& v : graph[u]) {
-        if (!visited.count(v)) {
-            dfs(v);
-        } else if (inStack.count(v)) {
-            backEdges.push_back({u, v});
-        }
-    }
-
-    inStack.erase(u);
-}
-
-void LoopFinder::findBackEdges() {
-    visited.clear();
-    inStack.clear();
-    backEdges.clear();
-
-    for (const auto& node : nodes) {
-        if (!visited.count(node)) {
-            dfs(node);
-        }
-    }
-}
-
-void LoopFinder::printBackEdges() const {
-    std::cout << "\nBack edges:\n";
-    for (const auto& [u, v] : backEdges) {
-        std::cout << u << " -> " << v << "\n";
-    }
-}
-
-std::set<std::string> LoopFinder::buildLoop(const std::string& u, const std::string& v) const {
-    std::set<std::string> loop;
-    std::stack<std::string> st;
-
-    loop.insert(u);
-    loop.insert(v);
-    st.push(u);
-
-    while (!st.empty()) {
-        std::string cur = st.top();
-        st.pop();
-
-        auto it = rev_graph.find(cur);
-        if (it == rev_graph.end()) {
-            continue;
-        }
-
-        for (const auto& pred : it->second) {
-            if (!loop.count(pred)) {
-                loop.insert(pred);
-                st.push(pred);
-            }
-        }
-    }
-
-    return loop;
-}
-
-void LoopFinder::printLoops() const {
-    std::cout << "\nloops from back edges:\n";
-
-    for (const auto& [u, v] : backEdges) {
-        std::set<std::string> loop = buildLoop(u, v);
-
-        std::cout << "back edge " << u << " -> " << v << ": { ";
-        for (const auto& node : loop) {
-            std::cout << node << " ";
-        }
-        std::cout << "}\n";
-    }
-}
-
-std::map<std::string, std::set<std::string>> LoopFinder::collectLoopsByHeader() const {
-    std::map<std::string, std::set<std::string>> mergedLoops;
-
-    for (const auto& [u, v] : backEdges) {
-        std::set<std::string> loop = buildLoop(u, v);
-        mergedLoops[v].insert(loop.begin(), loop.end());
-    }
-
-    return mergedLoops;
-}
-
-void LoopFinder::printMergedLoops() const {
-    std::cout << "\nmerged loops by header:\n";
-
-    std::map<std::string, std::set<std::string>> mergedLoops = collectLoopsByHeader();
-
-    for (const auto& [header, loopNodes] : mergedLoops) {
-        std::cout << "header " << header << ": { ";
-        for (const auto& node : loopNodes) {
-            std::cout << node << " ";
-        }
-        std::cout << "}\n";
-    }
-}
-
-std::vector<LoopInfo> LoopFinder::buildLoopInfos() const {
-    std::vector<LoopInfo> result;
-    std::map<std::string, std::set<std::string>> mergedLoops = collectLoopsByHeader();
-
-    int nextId = 1;
-    for (const auto& [header, loopNodes] : mergedLoops) {
-        LoopInfo loop;
-        loop.id = nextId++;
-        loop.header = header;
-        loop.nodes = loopNodes;
-        result.push_back(loop);
-    }
-
-    return result;
-}
-
-void LoopFinder::printLoopInfos() const {
-    std::cout << "\nloop infos:\n";
-
-    std::vector<LoopInfo> loops = buildLoopInfos();
-
-    for (const auto& loop : loops) {
-        std::cout << "[" << loop.id << "] header: " << loop.header << ", nodes: { ";
-        for (const auto& node : loop.nodes) {
-            std::cout << node << " ";
-        }
-        std::cout << "}\n";
-    }
-}
-
-std::vector<LoopInfo> LoopFinder::buildAllLoops() const {
-    std::vector<LoopInfo> loops = buildLoopInfos();
-
-    std::set<std::string> nodesInLoops;
-    for (const auto& loop : loops) {
-        nodesInLoops.insert(loop.nodes.begin(), loop.nodes.end());
-    }
-
-    std::set<std::string> rootNodes;
-    for (const auto& node : nodes) {
-        if (!nodesInLoops.count(node)) {
-            rootNodes.insert(node);
-        }
-    }
-
-    std::vector<LoopInfo> result;
-
-    LoopInfo rootLoop;
-    rootLoop.id = 0;
-    rootLoop.header = "";
-    rootLoop.nodes = rootNodes;
-    rootLoop.isRoot = true;
-    result.push_back(rootLoop);
-
-    for (auto& loop : loops) {
-        loop.isRoot = false;
-        result.push_back(loop);
-    }
-
-    return result;
-}
-
-void LoopFinder::printAllLoops() const {
-    std::cout << "\nAll loops:\n";
-
-    std::vector<LoopInfo> loops = buildAllLoops();
-
-    for (const auto& loop : loops) {
-        std::cout << "[" << loop.id << "] -> { ";
-        for (const auto& node : loop.nodes) {
-            std::cout << node << " ";
-        }
-        std::cout << "}";
-
-        if (!loop.isRoot) {
-            std::cout << ", header: " << loop.header;
-        }
-
-        std::cout << "\n";
-    }
-}
-
-bool LoopFinder::isSubset(const std::set<std::string>& a, const std::set<std::string>& b) const {
+bool LoopFinder::isSubset(const set<string>& a, const set<string>& b) const {
     for (const auto& x : a) {
         if (!b.count(x)) {
             return false;
@@ -213,30 +20,262 @@ bool LoopFinder::isSubset(const std::set<std::string>& a, const std::set<std::st
     return true;
 }
 
-std::vector<std::pair<int, int>> LoopFinder::buildLoopTree() const {
-    std::vector<std::pair<int, int>> tree;
-    std::vector<LoopInfo> loops = buildAllLoops();
+vector<string> LoopFinder::sortNodesForPrint(const set<string>& s) const {
+    // для вывода: сначала start, потом обычные, в конце stop
+    vector<string> v(s.begin(), s.end());
+    sort(v.begin(), v.end(), [](const string& a, const string& b) {
+        auto rank = [](const string& x) {
+            if (x == "start") return 0;
+            if (x == "stop") return 2;
+            return 1;
+        };
+        if (rank(a) != rank(b)) {
+            return rank(a) < rank(b);
+        }
+        return a < b;
+    });
+    return v;
+}
 
-    for (const auto& child : loops) {
-        if (child.id == 0) {
+void LoopFinder::dfsNumbering(
+    const string& node,
+    AnalyzeState& st,
+    int& timer,
+    set<string>& used) const {
+    used.insert(node);
+    st.number[node] = timer;
+    st.nodeByNum[timer] = node;
+    timer++;
+
+    auto it = graph.find(node);
+    if (it != graph.end()) {
+        for (const auto& to : it->second) {
+            if (!used.count(to)) {
+                dfsNumbering(to, st, timer, used);
+            }
+        }
+    }
+
+    st.last[st.number[node]] = timer - 1;
+}
+
+bool LoopFinder::isAncestor(int w, int v, const AnalyzeState& st) const {
+    return (w <= v) && (v <= st.last[w]);
+}
+
+int LoopFinder::findSet(int x, vector<int>& parent) const {
+    if (parent[x] == x) {
+        return x;
+    }
+    parent[x] = findSet(parent[x], parent);
+    return parent[x];
+}
+
+void LoopFinder::unionSet(int x, int y, vector<int>& parent) const {
+    int rx = findSet(x, parent);
+    int ry = findSet(y, parent);
+    parent[rx] = ry;
+}
+
+LoopFinder::AnalyzeState LoopFinder::runHavlakAnalyze() const {
+    AnalyzeState st;
+    st.N = static_cast<int>(nodes.size());
+    st.nodeByNum.assign(st.N + 1, "");
+    st.last.assign(st.N + 1, 0);
+    st.backPreds.assign(st.N + 1, {});
+    st.nonBackPreds.assign(st.N + 1, {});
+    st.header.assign(st.N + 1, 1);     // как в статье, по умолчанию START
+    st.type.assign(st.N + 1, 0);       // nonheader
+
+    // a) dfs numbering из start, потом добираем хвосты если вдруг есть
+    int timer = 1;
+    set<string> used;
+    if (nodes.count("start")) {
+        dfsNumbering("start", st, timer, used);
+    }
+    for (const auto& node : nodes) {
+        if (!used.count(node)) {
+            dfsNumbering(node, st, timer, used);
+        }
+    }
+
+    st.N = timer - 1;
+    st.nodeByNum.resize(st.N + 1);
+    st.last.resize(st.N + 1);
+    st.backPreds.resize(st.N + 1);
+    st.nonBackPreds.resize(st.N + 1);
+    st.header.resize(st.N + 1, 1);
+    st.type.resize(st.N + 1, 0);
+    st.ufParent.resize(st.N + 1);
+    for (int i = 1; i <= st.N; i++) {
+        st.ufParent[i] = i;
+    }
+
+    int startNum = st.number.count("start") ? st.number["start"] : 1;
+    st.header[startNum] = 0; // у start нет родителя
+
+    // b) делим входящие на backPred/nonBackPred
+    for (const auto& [u, out] : graph) {
+        if (!st.number.count(u)) {
+            continue;
+        }
+        int vNum = st.number[u];
+        for (const auto& w : out) {
+            if (!st.number.count(w)) {
+                continue;
+            }
+            int wNum = st.number[w];
+            if (isAncestor(wNum, vNum, st)) {
+                st.backPreds[wNum].insert(vNum);
+            } else {
+                st.nonBackPreds[wNum].insert(vNum);
+            }
+        }
+    }
+
+    // c,d,e) основной цикл analyze loops
+    for (int w = st.N; w >= 1; w--) {
+        set<int> P;
+        for (int v : st.backPreds[w]) {
+            if (v != w) {
+                P.insert(findSet(v, st.ufParent));
+            } else {
+                st.type[w] = 1; // self
+            }
+        }
+
+        vector<int> worklist(P.begin(), P.end());
+        if (!P.empty() && st.type[w] == 0) {
+            st.type[w] = 2; // reducible
+        }
+
+        while (!worklist.empty()) {
+            int x = worklist.back();
+            worklist.pop_back();
+
+            for (int y : st.nonBackPreds[x]) {
+                int yRep = findSet(y, st.ufParent);
+                if (!isAncestor(w, yRep, st)) {
+                    st.type[w] = 3; // irreducible
+                    st.nonBackPreds[w].insert(yRep);
+                } else if (yRep != w && !P.count(yRep)) {
+                    P.insert(yRep);
+                    worklist.push_back(yRep);
+                }
+            }
+        }
+
+        for (int x : P) {
+            st.header[x] = w;
+            unionSet(x, w, st.ufParent);
+        }
+    }
+
+    return st;
+}
+
+vector<LoopInfo> LoopFinder::buildAllLoops() const {
+    vector<LoopInfo> loops;
+    AnalyzeState st = runHavlakAnalyze();
+    if (st.N == 0) {
+        return loops;
+    }
+
+    int startNum = st.number.count("start") ? st.number["start"] : 1;
+
+    // строим дерево header для всех нод
+    vector<vector<int>> children(st.N + 1);
+    for (int v = 1; v <= st.N; v++) {
+        int p = st.header[v];
+        if (p >= 1 && p <= st.N) {
+            children[p].push_back(v);
+        }
+    }
+
+    // loop headers = self/reducible/irreducible
+    set<int> loopHeaders;
+    for (int v = 1; v <= st.N; v++) {
+        if (st.type[v] == 1 || st.type[v] == 2 || st.type[v] == 3) {
+            loopHeaders.insert(v);
+        }
+    }
+
+    map<int, set<string>> loopNodesByHeader;
+    for (int h : loopHeaders) {
+        stack<int> ss;
+        ss.push(h);
+        while (!ss.empty()) {
+            int cur = ss.top();
+            ss.pop();
+            loopNodesByHeader[h].insert(st.nodeByNum[cur]);
+            for (int to : children[cur]) {
+                ss.push(to);
+            }
+        }
+    }
+
+    // сортируем headers в удобном порядке для стабильных id
+    vector<int> orderedHeaders(loopHeaders.begin(), loopHeaders.end());
+    sort(orderedHeaders.begin(), orderedHeaders.end(), [&](int a, int b) {
+        const string& sa = st.nodeByNum[a];
+        const string& sb = st.nodeByNum[b];
+        auto rank = [](const string& x) {
+            if (x == "start") return 0;
+            if (x == "stop") return 2;
+            return 1;
+        };
+        if (rank(sa) != rank(sb)) {
+            return rank(sa) < rank(sb);
+        }
+        if (sa != sb) {
+            return sa < sb;
+        }
+        return a < b;
+    });
+
+    int nextId = 1;
+    for (int h : orderedHeaders) {
+        if (h == startNum) {
+            // start это корень, отдельным loop id не считаем
             continue;
         }
 
-        int parentId = 0;
-        int bestParentSize = -1;
+        LoopInfo info;
+        info.id = nextId++;
+        info.header = st.nodeByNum[h];
+        info.nodes = loopNodesByHeader[h];
 
-        for (const auto& candidate : loops) {
-            if (candidate.id == 0 || candidate.id == child.id) {
+        if (st.type[h] == 3) {
+            info.type = "irreducible";
+        } else {
+            info.type = "reducible";
+        }
+
+        loops.push_back(info);
+    }
+
+    return loops;
+}
+
+vector<pair<int, int>> LoopFinder::buildLoopTree(const vector<LoopInfo>& loops) const {
+    vector<pair<int, int>> tree;
+
+    for (const auto& child : loops) {
+        int parentId = 0;
+        int bestSize = -1;
+
+        for (const auto& parent : loops) {
+            if (parent.id == child.id) {
+                continue;
+            }
+            if (!isSubset(child.nodes, parent.nodes)) {
                 continue;
             }
 
-            if (isSubset(child.nodes, candidate.nodes)) {
-                int candidateSize = static_cast<int>(candidate.nodes.size());
-
-                if (bestParentSize == -1 || candidateSize < bestParentSize) {
-                    bestParentSize = candidateSize;
-                    parentId = candidate.id;
-                }
+            int parentSize = static_cast<int>(parent.nodes.size());
+            if (bestSize == -1 || parentSize < bestSize) {
+                bestSize = parentSize;
+                parentId = parent.id;
             }
         }
 
@@ -246,141 +285,55 @@ std::vector<std::pair<int, int>> LoopFinder::buildLoopTree() const {
     return tree;
 }
 
-void LoopFinder::printLoopTree() const {
-    std::cout << "\nLoop tree:\n";
+map<int, set<string>> LoopFinder::buildLoopBlocks(const vector<LoopInfo>& loops) const {
+    // каждую вершину кладем в самый внутренний цикл
+    map<int, set<string>> blocks;
 
-    std::vector<std::pair<int, int>> tree = buildLoopTree();
-    for (const auto& [parent, child] : tree) {
-        std::cout << "{" << parent << ", " << child << "}\n";
-    }
-}
+    for (const auto& node : nodes) {
+        int owner = 0;
+        int bestSize = -1;
 
-std::vector<int> LoopFinder::getChildren(int parentId) const {
-    std::vector<int> children;
-    std::vector<std::pair<int, int>> tree = buildLoopTree();
-
-    for (const auto& [parent, child] : tree) {
-        if (parent == parentId) {
-            children.push_back(child);
-        }
-    }
-
-    return children;
-}
-
-std::set<std::string> LoopFinder::getInnermostNodes(int loopId) const {
-    std::vector<LoopInfo> loops = buildAllLoops();
-
-    const LoopInfo* currentLoop = nullptr;
-    for (const auto& loop : loops) {
-        if (loop.id == loopId) {
-            currentLoop = &loop;
-            break;
-        }
-    }
-
-    if (currentLoop == nullptr) {
-        return {};
-    }
-
-    std::set<std::string> result = currentLoop->nodes;
-    std::vector<int> children = getChildren(loopId);
-
-    for (int childId : children) {
         for (const auto& loop : loops) {
-            if (loop.id == childId) {
-                for (const auto& node : loop.nodes) {
-                    result.erase(node);
-                }
-                break;
+            if (!loop.nodes.count(node)) {
+                continue;
+            }
+            int curSize = static_cast<int>(loop.nodes.size());
+            if (bestSize == -1 || curSize < bestSize) {
+                bestSize = curSize;
+                owner = loop.id;
             }
         }
+
+        blocks[owner].insert(node);
     }
 
-    return result;
-}
-
-void LoopFinder::printLoopBlocks() const {
-    std::cout << "\nLoop blocks:\n";
-
-    std::vector<LoopInfo> loops = buildAllLoops();
-
-    for (const auto& loop : loops) {
-        std::set<std::string> blockNodes = getInnermostNodes(loop.id);
-
-        std::cout << "[" << loop.id << "] -> { ";
-        for (const auto& node : blockNodes) {
-            std::cout << node << " ";
-        }
-        std::cout << "}";
-
-        if (!loop.isRoot) {
-            std::cout << ", header: " << loop.header;
-        }
-
-        std::cout << "\n";
-    }
-}
-
-std::set<std::string> LoopFinder::getEntryNodes(const LoopInfo& loop) const {
-    std::set<std::string> entryNodes;
-
-    for (const auto& node : loop.nodes) {
-        auto it = rev_graph.find(node);
-        if (it == rev_graph.end()) {
-            continue;
-        }
-
-        for (const auto& pred : it->second) {
-            if (!loop.nodes.count(pred)) {
-                entryNodes.insert(node);
-            }
-        }
-    }
-
-    return entryNodes;
-}
-
-std::string LoopFinder::getLoopType(const LoopInfo& loop) const {
-    if (loop.isRoot) {
-        return "";
-    }
-
-    std::set<std::string> entryNodes = getEntryNodes(loop);
-
-    if (entryNodes.size() == 1 && entryNodes.count(loop.header)) {
-        return "reducible";
-    }
-
-    return "irreducible";
+    return blocks;
 }
 
 void LoopFinder::printFinalResult() const {
-    std::cout << "\nFinal result:\n";
-    std::cout << "Loop blocks:\n";
+    vector<LoopInfo> loops = buildAllLoops();
+    vector<pair<int, int>> tree = buildLoopTree(loops);
+    map<int, set<string>> blocks = buildLoopBlocks(loops);
 
-    std::vector<LoopInfo> loops = buildAllLoops();
+    cout << "\nFinal result:\n";
+    cout << "Loop blocks:\n";
+
+    cout << "[0] -> { ";
+    for (const auto& node : sortNodesForPrint(blocks[0])) {
+        cout << node << " ";
+    }
+    cout << "}\n";
 
     for (const auto& loop : loops) {
-        std::set<std::string> blockNodes = getInnermostNodes(loop.id);
-
-        std::cout << "[" << loop.id << "] -> { ";
-        for (const auto& node : blockNodes) {
-            std::cout << node << " ";
+        cout << "[" << loop.id << "] -> { ";
+        for (const auto& node : sortNodesForPrint(blocks[loop.id])) {
+            cout << node << " ";
         }
-        std::cout << "}";
-
-        if (!loop.isRoot) {
-            std::cout << ", header: " << loop.header
-                      << ", " << getLoopType(loop);
-        }
-
-        std::cout << "\n";
+        cout << "}, header: " << loop.header << ", " << loop.type << "\n";
     }
 
-    std::cout << "Loop tree:\n";
-    std::vector<std::pair<int, int>> tree = buildLoopTree();
+    cout << "Loop tree:\n";
     for (const auto& [parent, child] : tree) {
-        std::cout << "{" << parent << ", " << child << "}\n";
+        cout << "{" << parent << ", " << child << "}\n";
     }
 }

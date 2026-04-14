@@ -5,14 +5,15 @@
 #include <set>
 #include <string>
 #include <utility>
-#include <stack>
 #include <map>
+#include <stack>
+#include <functional>
 
 struct LoopInfo {
     int id;
     std::string header;
     std::set<std::string> nodes;
-    bool isRoot;
+    std::string type;
 };
 
 class LoopFinder {
@@ -22,37 +23,35 @@ public:
     std::set<std::string> nodes;
 
     void addEdge(const std::string& u, const std::string& v);
-    void printGraph();
+    void printFinalResult() const;
 
-    std::set<std::string> visited;  //не заходим в вершину воторой раз
-    std::set<std::string> inStack;  //вершины на пути рекурсии
-    std::vector<std::pair<std::string, std::string>> backEdges; //список обратных ребер
-
-    void dfs(const std::string& u);
-    void findBackEdges();
-    void printBackEdges() const;
-
-    std::set<std::string> buildLoop(const std::string& u, const std::string& v) const;
-    void printLoops() const;
-
-    std::map<std::string, std::set<std::string>> collectLoopsByHeader() const;
-    void printMergedLoops() const;
-
-    std::vector<LoopInfo> buildLoopInfos() const;
-    void printLoopInfos() const;
-
+private:
     std::vector<LoopInfo> buildAllLoops() const;
-    void printAllLoops() const;
+    std::vector<std::pair<int, int>> buildLoopTree(const std::vector<LoopInfo>& loops) const;
+    std::map<int, std::set<std::string>> buildLoopBlocks(const std::vector<LoopInfo>& loops) const;
+
+    struct AnalyzeState {
+        int N = 0;
+        std::map<std::string, int> number;
+        std::vector<std::string> nodeByNum;
+        std::vector<int> last;
+        std::vector<std::set<int>> backPreds;
+        std::vector<std::set<int>> nonBackPreds;
+        std::vector<int> header;
+        std::vector<int> ufParent;
+        std::vector<int> type; // 0 nonheader, 1 self, 2 reducible, 3 irreducible
+    };
+
+    AnalyzeState runHavlakAnalyze() const;
+    void dfsNumbering(
+        const std::string& node,
+        AnalyzeState& st,
+        int& timer,
+        std::set<std::string>& used) const;
+    bool isAncestor(int w, int v, const AnalyzeState& st) const;
+    int findSet(int x, std::vector<int>& parent) const;
+    void unionSet(int x, int y, std::vector<int>& parent) const;
 
     bool isSubset(const std::set<std::string>& a, const std::set<std::string>& b) const;
-    std::vector<std::pair<int, int>> buildLoopTree() const;
-    void printLoopTree() const;
-
-    std::vector<int> getChildren(int parentId) const;
-    std::set<std::string> getInnermostNodes(int loopId) const;
-    void printLoopBlocks() const;
-
-    std::set<std::string> getEntryNodes(const LoopInfo& loop) const;
-    std::string getLoopType(const LoopInfo& loop) const;
-    void printFinalResult() const;
+    std::vector<std::string> sortNodesForPrint(const std::set<std::string>& s) const;
 };
