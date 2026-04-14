@@ -18,6 +18,7 @@ int main() {
 
     lf.printLoops();
     lf.printMergedLoops();
+    lf.printLoopInfos();
 
     return 0;
 }

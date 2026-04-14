@@ -121,3 +121,33 @@ void LoopFinder::printMergedLoops() const {
         std::cout << "}\n";
     }
 }
+
+std::vector<LoopInfo> LoopFinder::buildLoopInfos() const {
+    std::vector<LoopInfo> result;
+    std::map<std::string, std::set<std::string>> mergedLoops = collectLoopsByHeader();
+
+    int nextId = 1;
+    for (const auto& [header, loopNodes] : mergedLoops) {
+        LoopInfo loop;
+        loop.id = nextId++;
+        loop.header = header;
+        loop.nodes = loopNodes;
+        result.push_back(loop);
+    }
+
+    return result;
+}
+
+void LoopFinder::printLoopInfos() const {
+    std::cout << "\nloop infos:\n";
+
+    std::vector<LoopInfo> loops = buildLoopInfos();
+
+    for (const auto& loop : loops) {
+        std::cout << "[" << loop.id << "] header: " << loop.header << ", nodes: { ";
+        for (const auto& node : loop.nodes) {
+            std::cout << node << " ";
+        }
+        std::cout << "}\n";
+    }
+}

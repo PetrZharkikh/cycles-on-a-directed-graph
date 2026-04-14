@@ -8,6 +8,12 @@
 #include <stack>
 #include <map>
 
+struct LoopInfo {
+    int id;
+    std::string header;
+    std::set<std::string> nodes;
+};
+
 class LoopFinder {
 public:
     std::unordered_map<std::string, std::vector<std::string>> graph;
@@ -30,4 +36,7 @@ public:
 
     std::map<std::string, std::set<std::string>> collectLoopsByHeader() const;
     void printMergedLoops() const;
+
+    std::vector<LoopInfo> buildLoopInfos() const;
+    void printLoopInfos() const;
 };
